@@ -1,3 +1,7 @@
+/*
+// Camera page commented out for future implementation
+// All camera/photo functionality has been disabled
+
 import 'package:chef_ia/features/home/presentation/providers/ingredients_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -518,3 +522,4 @@ class _CameraPageState extends ConsumerState<CameraPage>
     super.dispose();
   }
 }
+*/

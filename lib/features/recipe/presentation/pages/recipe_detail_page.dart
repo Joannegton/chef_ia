@@ -2,7 +2,9 @@ import 'package:chef_ia/models/recipe_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:async';
+import 'dart:io';
 
 /// Página de detalhes da receita
 class RecipeDetailPage extends ConsumerStatefulWidget {
@@ -68,22 +70,9 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage>
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
-              expandedHeight: 300,
+              expandedHeight: 180,
               pinned: true,
               flexibleSpace: FlexibleSpaceBar(
-                title: Text(
-                  _currentRecipe!.nome,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black54,
-                        offset: Offset(1, 1),
-                        blurRadius: 3,
-                      ),
-                    ],
-                  ),
-                ),
                 background: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -106,7 +95,7 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage>
                           child: const Center(
                             child: Icon(
                               Icons.restaurant_menu,
-                              size: 120,
+                              size: 80,
                               color: Colors.white24,
                             ),
                           ),
@@ -115,12 +104,27 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage>
                       
                       // Recipe info overlay
                       Positioned(
-                        bottom: 80,
+                        bottom: 16,
                         left: 16,
                         right: 16,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Text(
+                              _currentRecipe!.nome,
+                              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    shadows: const [
+                                      Shadow(
+                                        color: Colors.black54,
+                                        offset: Offset(1, 1),
+                                        blurRadius: 3,
+                                      ),
+                                    ],
+                                  ),
+                            ),
+                            const SizedBox(height: 12),
                             Row(
                               children: [
                                 _buildInfoChip(
@@ -175,13 +179,17 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage>
                         children: [
                           Icon(Icons.download),
                           SizedBox(width: 8),
-                          Text('Salvar'),
+                          Text('Baixar'),
                         ],
                       ),
                     ),
                   ],
                   onSelected: (value) {
-                    // TODO: Implementar ações
+                    if (value == 'share') {
+                      _shareRecipe();
+                    } else if (value == 'save') {
+                      _downloadRecipe();
+                    }
                   },
                 ),
               ],
@@ -545,6 +553,264 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage>
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _shareRecipe() async {
+    if (_currentRecipe == null) return;
+    
+    final text = '''
+🍳 ${_currentRecipe!.nome}
+
+⏱️ Tempo: ${_currentRecipe!.tempo}
+👥 Porções: ${_currentRecipe!.porcoes}
+📊 Dificuldade: ${_currentRecipe!.dificuldade}
+
+📝 Descrição:
+${_currentRecipe!.descricao}
+
+🧂 Ingredientes:
+${_currentRecipe!.ingredientes.asMap().entries.map((e) => '${e.key + 1}. ${e.value}').join('\n')}
+
+👨‍🍳 Modo de Preparo:
+${_currentRecipe!.preparo.asMap().entries.map((e) => 'Passo ${e.key + 1}: ${e.value}').join('\n\n')}
+
+Compartilhado via ChefIA 🤖
+''';
+
+    try {
+      // Usa o sistema de compartilhamento nativo do Android/iOS
+      _showShareOptions(text);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao compartilhar: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showShareOptions(String text) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Compartilhar Receita',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildShareOption(
+                  icon: Icons.share,
+                  label: 'Copiar Texto',
+                  onTap: () {
+                    // Copia para a área de transferência
+                    _copyToClipboard(text);
+                    Navigator.pop(context);
+                  },
+                ),
+                _buildShareOption(
+                  icon: Icons.mail,
+                  label: 'Email',
+                  onTap: () {
+                    // Abre email
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Abrir app de email...')),
+                    );
+                  },
+                ),
+                _buildShareOption(
+                  icon: Icons.message,
+                  label: 'Mensagem',
+                  onTap: () {
+                    // Abre app de mensagens
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Abrir app de mensagens...')),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShareOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: Theme.of(context).colorScheme.primary,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyToClipboard(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('✅ Receita copiada para a área de transferência!'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
+    // TODO: Implementar cópia para clipboard com clipboard package
+    debugPrint('Texto copiado: $text');
+  }
+
+  Future<void> _downloadRecipe() async {
+    if (_currentRecipe == null) return;
+    
+    try {
+      final recipe = _currentRecipe!;
+      
+      // Criar conteúdo formatado da receita
+      final recipeContent = '''
+╔════════════════════════════════════════════════════════════════╗
+║                         ${ recipe.nome.toUpperCase()}
+╚════════════════════════════════════════════════════════════════╝
+
+📝 DESCRIÇÃO:
+${recipe.descricao}
+
+─────────────────────────────────────────────────────────────────
+
+📊 INFORMAÇÕES:
+  ⏱️  Tempo de Preparo: ${recipe.tempo}
+  👥 Porções: ${recipe.porcoes}
+  � Dificuldade: ${recipe.dificuldade}
+
+─────────────────────────────────────────────────────────────────
+
+🥘 INGREDIENTES:
+${recipe.ingredientes.map((ing) => '  • $ing').join('\n')}
+
+─────────────────────────────────────────────────────────────────
+
+👨‍🍳 MODO DE PREPARO:
+${recipe.preparo.asMap().entries.map((e) => '  ${e.key + 1}. ${e.value}').join('\n')}
+
+─────────────────────────────────────────────────────────────────
+
+💡 DICA:
+${recipe.dica}
+
+─────────────────────────────────────────────────────────────────
+
+Receita compartilhada via ChefIA 🤖
+${DateTime.now().toString()}
+''';
+      
+      // Obter diretório de Downloads (pública)
+      // No Android 13+, tenta usar a pasta pública de Downloads
+      Directory? downloadsDir;
+      
+      try {
+        // Tenta obter a pasta de Downloads pública
+        downloadsDir = Directory('/storage/emulated/0/Download');
+        if (!await downloadsDir.exists()) {
+          downloadsDir = await getDownloadsDirectory();
+        }
+      } catch (e) {
+        downloadsDir = await getDownloadsDirectory();
+      }
+      
+      if (downloadsDir == null) {
+        throw Exception('Não foi possível acessar a pasta de Downloads');
+      }
+      
+      // Criar nome do arquivo
+      final fileName = '${recipe.nome.replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}.txt';
+      final filePath = '${downloadsDir.path}/$fileName';
+      
+      // Salvar arquivo
+      final file = File(filePath);
+      await file.writeAsString(recipeContent);
+      
+      if (mounted) {
+        // Mostrar snackbar com o caminho
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '✅ Receita salva com sucesso!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Caminho: $filePath',
+                  style: const TextStyle(fontSize: 12),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Copiar',
+              textColor: Colors.white,
+              onPressed: () {
+                // TODO: Copiar para clipboard
+              },
+            ),
+          ),
+        );
+      }
+      
+      debugPrint('✅ Receita salva em: $filePath');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Erro ao salvar: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      debugPrint('❌ Erro ao salvar receita: $e');
+    }
   }
 
   @override

@@ -6,24 +6,29 @@ import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/custom_button.dart';
 
-/// Página de login
-class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+/// Página de cadastro
+class RegisterPage extends ConsumerStatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends ConsumerState<LoginPage>
+class _RegisterPageState extends ConsumerState<RegisterPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _nameFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
+  final _confirmPasswordFocus = FocusNode();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -115,11 +120,39 @@ class _LoginPageState extends ConsumerState<LoginPage>
                 ),
 
                 const SizedBox(height: 20),
-                // Formulário de Login
+                // Formulário de Cadastro
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
+                      // Nome
+                      TextFormField(
+                        controller: _nameController,
+                        focusNode: _nameFocus,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) {
+                          _emailFocus.requestFocus();
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Nome completo',
+                          prefixIcon: const Icon(Icons.person_outline),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, digite seu nome';
+                          }
+                          if (value.length < 2) {
+                            return 'Nome deve ter pelo menos 2 caracteres';
+                          }
+                          return null;
+                        },
+                      ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.2),
+
+                      const SizedBox(height: 20),
+
                       // Email
                       TextFormField(
                         controller: _emailController,
@@ -145,7 +178,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                           }
                           return null;
                         },
-                      ).animate().fadeIn(delay: 900.ms).slideX(begin: -0.2),
+                      ).animate().fadeIn(delay: 700.ms).slideX(begin: -0.2),
 
                       const SizedBox(height: 20),
 
@@ -154,9 +187,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
                         controller: _passwordController,
                         focusNode: _passwordFocus,
                         obscureText: _obscurePassword,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         onFieldSubmitted: (_) {
-                          _handleLogin();
+                          _confirmPasswordFocus.requestFocus();
                         },
                         decoration: InputDecoration(
                           labelText: 'Senha',
@@ -181,29 +214,62 @@ class _LoginPageState extends ConsumerState<LoginPage>
                           if (value == null || value.isEmpty) {
                             return 'Por favor, digite sua senha';
                           }
+                          if (value.length < 6) {
+                            return 'A senha deve ter pelo menos 6 caracteres';
+                          }
                           return null;
                         },
-                      ).animate().fadeIn(delay: 1000.ms).slideX(begin: -0.2),
+                      ).animate().fadeIn(delay: 800.ms).slideX(begin: -0.2),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
 
-                      // Esqueci a senha
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: _handleForgotPassword,
-                          child: const Text('Esqueci minha senha'),
+                      // Confirmar Senha
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        focusNode: _confirmPasswordFocus,
+                        obscureText: _obscureConfirmPassword,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) {
+                          _handleRegister();
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Confirmar senha',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirmPassword = !_obscureConfirmPassword;
+                              });
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ).animate().fadeIn(delay: 1100.ms),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, confirme sua senha';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'As senhas não coincidem';
+                          }
+                          return null;
+                        },
+                      ).animate().fadeIn(delay: 900.ms).slideX(begin: -0.2),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 32),
 
-                      // Botão de Login
+                      // Botão de Cadastro
                       PrimaryButton(
-                        label: 'Entrar',
-                        onPressed: _handleLogin,
+                        label: 'Criar conta',
+                        onPressed: _handleRegister,
                         isLoading: _isLoading,
-                      ).animate().fadeIn(delay: 1200.ms).scale(begin: const Offset(0.8, 0.8)),
+                      ).animate().fadeIn(delay: 1000.ms).scale(begin: const Offset(0.8, 0.8)),
 
                       const SizedBox(height: 24),
 
@@ -220,7 +286,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                           ),
                           const Expanded(child: Divider()),
                         ],
-                      ).animate().fadeIn(delay: 1300.ms),
+                      ).animate().fadeIn(delay: 1100.ms),
 
                       const SizedBox(height: 24),
 
@@ -322,24 +388,24 @@ class _LoginPageState extends ConsumerState<LoginPage>
                       //       ),
                       //     ),
                       //   ),
-                      // ).animate().fadeIn(delay: 1400.ms).scale(begin: const Offset(0.8, 0.8)),
+                      // ).animate().fadeIn(delay: 1200.ms).scale(begin: const Offset(0.8, 0.8)),
 
                       // const SizedBox(height: 20),
 
-                      // Link para cadastro
+                      // Link para login
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Não tem conta? ',
+                            'Já tem conta? ',
                             style: TextStyle(color: Colors.grey.shade600),
                           ),
                           TextButton(
-                            onPressed: () => context.goToRegister(),
-                            child: const Text('Criar conta'),
+                            onPressed: () => context.goToLogin(),
+                            child: const Text('Fazer login'),
                           ),
                         ],
-                      ).animate().fadeIn(delay: 1500.ms),
+                      ).animate().fadeIn(delay: 1300.ms),
                     ],
                   ),
                 ),
@@ -351,8 +417,8 @@ class _LoginPageState extends ConsumerState<LoginPage>
     );
   }
 
-  /// Handles login
-  Future<void> _handleLogin() async {
+  /// Handles register
+  Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -360,36 +426,25 @@ class _LoginPageState extends ConsumerState<LoginPage>
     });
 
     try {
-      debugPrint('🔐 Iniciando processo de login...');
-      debugPrint('📧 Email: ${_emailController.text.trim()}');
-      
       final authService = ref.read(authServiceProvider);
-      debugPrint('🔗 Chamando authService.signInWithEmail...');
-      
-      await authService.signInWithEmail(
+      await authService.signUpWithEmail(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        fullName: _nameController.text.trim(),
       );
-      
-      debugPrint('✅ Login realizado com sucesso!');
-      
+
       if (mounted) {
-        debugPrint('🏠 Navegando para a página inicial...');
         context.goToHome();
       }
     } catch (e) {
-      debugPrint('❌ Erro durante o login: $e');
-      debugPrint('🔍 Stack trace: ${StackTrace.current}');
-      
       if (mounted) {
-        _showErrorSnackbar('Erro ao fazer login. Verifique suas credenciais.');
+        _showErrorSnackbar('Erro ao criar conta. Tente novamente.');
       }
     } finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        debugPrint('🔄 Estado de loading resetado');
       }
     }
   }
@@ -401,31 +456,15 @@ class _LoginPageState extends ConsumerState<LoginPage>
     });
 
     try {
-      debugPrint('🔐 Iniciando login com Google...');
-      
       final authService = ref.read(authServiceProvider);
-      debugPrint('🔗 Chamando authService.signInWithGoogle...');
-      
       final success = await authService.signInWithGoogle();
-      
-      if (success) {
-        debugPrint('✅ Login com Google realizado com sucesso!');
-        
-        if (mounted) {
-          debugPrint('🏠 Navegando para a página inicial...');
-          context.goToHome();
-        }
-      } else {
-        debugPrint('⚠️ Login com Google falhou - success = false');
-        
-        if (mounted) {
-          _showErrorSnackbar('Falha ao fazer login com Google');
-        }
+
+      if (success && mounted) {
+        context.goToHome();
+      } else if (mounted) {
+        _showErrorSnackbar('Falha ao fazer login com Google');
       }
     } catch (e) {
-      debugPrint('❌ Erro durante login com Google: $e');
-      debugPrint('🔍 Stack trace: ${StackTrace.current}');
-      
       if (mounted) {
         _showErrorSnackbar('Erro ao fazer login com Google. Tente novamente.');
       }
@@ -434,44 +473,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
         setState(() {
           _isLoading = false;
         });
-        debugPrint('🔄 Estado de loading resetado');
-      }
-    }
-  }
-
-  /// Handles forgot password
-  Future<void> _handleForgotPassword() async {
-    if (_emailController.text.isEmpty) {
-      debugPrint('⚠️ Tentativa de reset de senha sem email preenchido');
-      _showErrorSnackbar('Digite seu email primeiro');
-      return;
-    }
-
-    try {
-      debugPrint('🔐 Iniciando reset de senha...');
-      debugPrint('📧 Email para reset: ${_emailController.text.trim()}');
-      
-      final authService = ref.read(authServiceProvider);
-      debugPrint('🔗 Chamando authService.resetPassword...');
-      
-      await authService.resetPassword(_emailController.text.trim());
-      
-      debugPrint('✅ Email de reset enviado com sucesso!');
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Email de recuperação enviado!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ Erro durante reset de senha: $e');
-      debugPrint('🔍 Stack trace: ${StackTrace.current}');
-      
-      if (mounted) {
-        _showErrorSnackbar('Erro ao enviar email de recuperação. Tente novamente.');
       }
     }
   }
@@ -488,10 +489,14 @@ class _LoginPageState extends ConsumerState<LoginPage>
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _nameFocus.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
+    _confirmPasswordFocus.dispose();
     super.dispose();
   }
 }

@@ -4,10 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 /// Tema do aplicativo ChefIA
 class AppTheme {
   // Cores principais
-  static const Color _primary = Color(0xFF6C63FF);
-  static const Color _primaryDark = Color(0xFF5A4FCF);
-  static const Color _secondary = Color(0xFFFF6B6B);
-  static const Color _accent = Color(0xFF4ECDC4);
+  static const Color _primary = Color(0xFFA8BC7F);
+  static const Color _primaryDark = Color.fromARGB(255, 148, 199, 48);
+  static const Color _secondary = Color(0xFFDCA16F);
+  static const Color _secondaryDark = Color.fromARGB(255, 143, 84, 30);
+  static const Color _accent = Color.fromARGB(255, 29, 224, 198);
   
   // Cores neutras
   static const Color _background = Color(0xFFFAFAFA);
@@ -66,8 +67,8 @@ class AppTheme {
       // Cards
       cardTheme: CardThemeData(
         color: _surface,
-        elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.1),
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.08),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -79,9 +80,10 @@ class AppTheme {
           backgroundColor: _primary,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+          minimumSize: const Size(double.infinity, 56),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
           ),
           textStyle: GoogleFonts.poppins(
             fontSize: 16,
@@ -90,13 +92,25 @@ class AppTheme {
         ),
       ),
       
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: _primary,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          textStyle: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: _primary,
           side: const BorderSide(color: _primary, width: 1.5),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+          minimumSize: const Size(double.infinity, 56),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
           ),
           textStyle: GoogleFonts.poppins(
             fontSize: 16,
@@ -169,8 +183,8 @@ class AppTheme {
       
       // Color Scheme
       colorScheme: const ColorScheme.dark(
-        primary: _primary,
-        secondary: _secondary,
+        primary: _primaryDark,
+        secondary: _secondaryDark,
         tertiary: _accent,
         background: _backgroundDark,
         surface: _surfaceDark,

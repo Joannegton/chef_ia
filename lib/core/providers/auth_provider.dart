@@ -30,6 +30,19 @@ final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(supabase);
 });
 
+/// Provider que escuta mudanças de autenticação e limpa o estado
+final authStateListenerProvider = FutureProvider<void>((ref) async {
+  final authState = ref.watch(authStateProvider);
+  
+  // Quando o usuário faz logout (session == null)
+  authState.whenData((state) {
+    if (state.session == null) {
+      // Aqui vamos limpar os dados dos ingredientes e receitas
+      // Será feito via invalidate dos providers dependentes
+    }
+  });
+});
+
 /// Serviço de autenticação
 class AuthService {
   final SupabaseClient _supabase;

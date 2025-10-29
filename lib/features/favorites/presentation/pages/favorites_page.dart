@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/router/app_router.dart';
+import '../../../../core/widgets/custom_button.dart';
+import '../../providers/favorites_provider.dart';
 
 /// Página de receitas favoritas
 class FavoritesPage extends ConsumerStatefulWidget {
@@ -18,35 +20,19 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
   String _searchQuery = '';
   String _selectedFilter = 'Todas';
 
-  // Mock data - substituir por provider real
-  final List<Recipe> _mockFavorites = [
-    Recipe(
-      nome: 'Frango Grelhado',
-      descricao: 'Frango suculento grelhado com temperos especiais',
-      tempo: '25 min',
-      dificuldade: 'Fácil',
-      porcoes: 2,
-      ingredientes: ['Frango', 'Alho', 'Cebola', 'Azeite'],
-      preparo: ['Tempere o frango', 'Grelhe por 12 min de cada lado'],
-      dica: 'Deixe marinando por 1 hora antes de grelhar',
-      isFavorite: true,
-    ),
-    Recipe(
-      nome: 'Risotto de Cogumelos',
-      descricao: 'Risotto cremoso com cogumelos frescos',
-      tempo: '35 min',
-      dificuldade: 'Médio',
-      porcoes: 4,
-      ingredientes: ['Arroz arbóreo', 'Cogumelos', 'Caldo', 'Vinho branco'],
-      preparo: ['Refogue a cebola', 'Adicione o arroz', 'Acrescente o caldo aos poucos'],
-      dica: 'Mexa sempre no mesmo sentido para não quebrar os grãos',
-      isFavorite: true,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Carregar favoritos quando a página é inicializada
+    Future.microtask(() {
+      ref.read(favoritesProvider.notifier).loadFavorites();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredRecipes = _getFilteredRecipes();
+    final favorites = ref.watch(favoritesProvider);
+    final filteredRecipes = _getFilteredRecipes(favorites);
 
     return Scaffold(
       appBar: AppBar(
@@ -152,42 +138,46 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            _searchQuery.isNotEmpty ? Icons.search_off : Icons.favorite_border,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _searchQuery.isNotEmpty 
-                ? 'Nenhuma receita encontrada'
-                : 'Nenhuma receita favorita ainda',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.grey.shade600,
-                ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _searchQuery.isNotEmpty
-                ? 'Tente buscar por outros termos'
-                : 'Gere receitas e adicione às suas favoritas',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey.shade500,
-                ),
-            textAlign: TextAlign.center,
-          ),
-          if (_searchQuery.isEmpty) ...[
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => context.goToHome(),
-              icon: const Icon(Icons.add),
-              label: const Text('Criar Receita'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _searchQuery.isNotEmpty ? Icons.search_off : Icons.favorite_border,
+              size: 64,
+              color: Colors.grey.shade400,
             ),
+            const SizedBox(height: 16),
+            Text(
+              _searchQuery.isNotEmpty 
+                  ? 'Nenhuma receita encontrada'
+                  : 'Nenhuma receita favorita ainda',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.grey.shade600,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _searchQuery.isNotEmpty
+                  ? 'Tente buscar por outros termos'
+                  : 'Gere receitas e adicione às suas favoritas',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey.shade500,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            if (_searchQuery.isEmpty) ...[
+              const SizedBox(height: 32),
+              PrimaryButton(
+                label: 'Criar Receita',
+                onPressed: () => context.goToHome(),
+                icon: Icons.add,
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     ).animate().fadeIn().scale();
   }
@@ -195,19 +185,14 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
   Widget _buildRecipeCard(Recipe recipe, int index) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
+      elevation: 4,
+      shadowColor: Colors.black.withOpacity(0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => context.goToRecipeDetail(
-          recipe.id,
-          recipe: recipe.toJson(),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             // Recipe Header with Image Placeholder
             Container(
               height: 120,
@@ -365,7 +350,6 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
             ),
           ],
         ),
-      ),
     ).animate(delay: (index * 100).ms).slideY(begin: 0.2).fadeIn();
   }
 
@@ -402,8 +386,8 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
     );
   }
 
-  List<Recipe> _getFilteredRecipes() {
-    var filtered = _mockFavorites.where((recipe) {
+  List<Recipe> _getFilteredRecipes(List<Recipe> recipes) {
+    var filtered = recipes.where((recipe) {
       // Text search
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
@@ -438,11 +422,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
   }
 
   void _toggleFavorite(Recipe recipe) {
-    // TODO: Implementar toggle com Supabase
-    setState(() {
-      // Remove from favorites for now
-      _mockFavorites.remove(recipe);
-    });
+    ref.read(favoritesProvider.notifier).removeFromFavorites(recipe.id);
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -450,10 +430,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
         action: SnackBarAction(
           label: 'Desfazer',
           onPressed: () {
-            // TODO: Implementar undo
-            setState(() {
-              _mockFavorites.add(recipe);
-            });
+            ref.read(favoritesProvider.notifier).addToFavorites(recipe);
           },
         ),
       ),

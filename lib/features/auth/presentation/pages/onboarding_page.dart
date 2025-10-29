@@ -20,16 +20,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final List<OnboardingStep> _steps = [
     OnboardingStep(
       title: 'Bem-vindo ao ChefIA!',
-      description: 'Transforme os ingredientes da sua geladeira em receitas incríveis com o poder da Inteligência Artificial.',
+      description: 'Transforme os ingredientes disponíveis em receitas incríveis com o poder da Inteligência Artificial.',
       icon: Icons.restaurant_menu,
       color: const Color(0xFF6C63FF),
     ),
-    OnboardingStep(
-      title: 'Tire uma Foto',
-      description: 'Fotografe sua geladeira e deixe nossa IA identificar automaticamente os ingredientes disponíveis.',
-      icon: Icons.camera_alt,
-      color: const Color(0xFF4ECDC4),
-    ),
+    // OnboardingStep(
+    //   title: 'Tire uma Foto',
+    //   description: 'Fotografe os ingredientes e deixe nossa IA identificar automaticamente os ingredientes disponíveis.',
+    //   icon: Icons.camera_alt,
+    //   color: const Color(0xFF4ECDC4),
+    // ),
     OnboardingStep(
       title: 'Receitas Personalizadas',
       description: 'Receba receitas únicas criadas especialmente para os seus ingredientes, com passo a passo detalhado.',
@@ -193,33 +193,25 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   const Spacer(),
 
                   // Botão Próximo/Começar
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_currentPage < _steps.length - 1) {
-                        _pageController.nextPage(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      } else {
-                        context.goToLogin();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _steps[_currentPage].color,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                  SizedBox(
+                    width: 120,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_currentPage < _steps.length - 1) {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        } else {
+                          context.goToLogin();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                    ),
-                    child: Text(
-                      _currentPage < _steps.length - 1 ? 'Próximo' : 'Começar',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      child: Text(
+                        _currentPage < _steps.length - 1 ? 'Próximo' : 'Começar',
                       ),
                     ),
                   ).animate().scale(

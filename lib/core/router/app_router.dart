@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
-import '../../features/camera/presentation/pages/camera_page.dart';
+// import '../../features/camera/presentation/pages/camera_page.dart';
 import '../../features/recipe/presentation/pages/recipe_detail_page.dart';
 import '../../features/favorites/presentation/pages/favorites_page.dart';
 import '../providers/auth_provider.dart';
@@ -20,16 +21,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState.value?.session != null;
       final location = state.matchedLocation;
       
-      // Se não está autenticado e não está na tela de login/onboarding
+      // Se não está autenticado e não está na tela de login/register/onboarding
       if (!isAuthenticated && 
           !location.startsWith('/login') && 
+          !location.startsWith('/register') &&
           !location.startsWith('/onboarding')) {
         return '/onboarding';
       }
       
-      // Se está autenticado e está na tela de login/onboarding
+      // Se está autenticado e está na tela de login/register/onboarding
       if (isAuthenticated && 
-          (location.startsWith('/login') || location.startsWith('/onboarding'))) {
+          (location.startsWith('/login') || 
+           location.startsWith('/register') ||
+           location.startsWith('/onboarding'))) {
         return '/home';
       }
       
@@ -49,6 +53,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'login',
         builder: (context, state) => const LoginPage(),
       ),
+      GoRoute(
+        path: '/register',
+        name: 'register',
+        builder: (context, state) => const RegisterPage(),
+      ),
       
       // Home
       GoRoute(
@@ -57,11 +66,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HomePage(),
         routes: [
           // Camera
-          GoRoute(
-            path: 'camera',
-            name: 'camera',
-            builder: (context, state) => const CameraPage(),
-          ),
+          // GoRoute(
+          //   path: 'camera',
+          //   name: 'camera',
+          //   builder: (context, state) => const CameraPage(),
+          // ),
           
           // Recipe Detail
           GoRoute(
@@ -123,10 +132,11 @@ extension AppNavigation on BuildContext {
   // Auth
   void goToOnboarding() => go('/onboarding');
   void goToLogin() => go('/login');
+  void goToRegister() => go('/register');
   
   // Main
   void goToHome() => go('/home');
-  void goToCamera() => go('/home/camera');
+  // void goToCamera() => go('/home/camera');
   void goToFavorites() => go('/home/favorites');
   
   // Recipe
@@ -135,7 +145,7 @@ extension AppNavigation on BuildContext {
   }
   
   // Navigation with results
-  Future<T?> pushCamera<T>() => push<T>('/home/camera');
+  // Future<T?> pushCamera<T>() => push<T>('/home/camera');
   Future<T?> pushRecipeDetail<T>(String recipeId, {Map<String, dynamic>? recipe}) {
     return push<T>('/home/recipe/$recipeId', extra: recipe);
   }

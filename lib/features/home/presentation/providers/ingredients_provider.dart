@@ -50,18 +50,18 @@ class IngredientsNotifier extends StateNotifier<List<String>> {
     state = state.where((item) => item != ingredient).toList();
   }
 
-  /// Define ingredientes da câmera
-  void setIngredientsFromCamera(List<String> ingredients) {
-    // Remove duplicatas e limita
-    final uniqueIngredients = ingredients
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toSet()
-        .take(AppConfig.maxIngredientsCount)
-        .toList();
-    
-    state = uniqueIngredients;
-  }
+  /// // Define ingredientes da câmera (comentado para futuro)
+  // void setIngredientsFromCamera(List<String> ingredients) {
+  //   // Remove duplicatas e limita
+  //   final uniqueIngredients = ingredients
+  //       .map((e) => e.trim())
+  //       .where((e) => e.isNotEmpty)
+  //       .toSet()
+  //       .take(AppConfig.maxIngredientsCount)
+  //       .toList();
+  //   
+  //   state = uniqueIngredients;
+  // }
 
   /// Limpa todos os ingredientes
   void clear() {

@@ -5,6 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/widgets/custom_button.dart';
+import '../../../favorites/providers/favorites_provider.dart';
 import '../widgets/ingredient_chip.dart';
 import '../widgets/ingredient_input.dart';
 import '../providers/ingredients_provider.dart';
@@ -39,7 +41,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final generatedRecipes = ref.watch(generatedRecipesProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Row(
           children: [
@@ -85,15 +87,15 @@ class _HomePageState extends ConsumerState<HomePage>
               ),
             ),
             itemBuilder: (context) => [
-              const PopupMenuItem<String>(
-                value: 'profile',
-                child: Text('Perfil'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'settings',
-                child: Text('Configurações'),
-              ),
-              const PopupMenuDivider(),
+              // const PopupMenuItem<String>(
+              //   value: 'profile',
+              //   child: Text('Perfil'),
+              // ),
+              // const PopupMenuItem<String>(
+              //   value: 'settings',
+              //   child: Text('Configurações'),
+              // ),
+              // const PopupMenuDivider(),
               const PopupMenuItem<String>(
                 value: 'logout',
                 child: Text('Sair'),
@@ -101,13 +103,23 @@ class _HomePageState extends ConsumerState<HomePage>
             ],
             onSelected: (value) async {
               switch (value) {
-                case 'profile':
-                  // TODO: Implementar perfil
-                  break;
-                case 'settings':
-                  // TODO: Implementar configurações
-                  break;
+                // case 'profile':
+                //   // TODO: Implementar perfil
+                //   break;
+                // case 'settings':
+                //   // TODO: Implementar configurações
+                //   break;
                 case 'logout':
+                  // Limpar estado antes de fazer logout
+                  ref.read(ingredientsProvider.notifier).clear();
+                  ref.read(generatedRecipesProvider.notifier).clear();
+                  ref.read(isGeneratingRecipesProvider.notifier).state = false;
+                  
+                  // Limpar favoritos também
+                  ref.invalidate(favoritesProvider);
+                  ref.invalidate(favoritedRecipesProvider);
+                  
+                  // Fazer logout
                   await ref.read(authServiceProvider).signOut();
                   break;
               }
@@ -141,106 +153,106 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                     ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
 
-                    // Botão da Câmera - Feature principal
-                    Container(
-                      width: double.infinity,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.tertiary,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(24),
-                          onTap: () => context.goToCamera(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                AnimatedBuilder(
-                                  animation: _animationController,
-                                  builder: (context, child) {
-                                    return Transform.scale(
-                                      scale: 1.0 + (_animationController.value * 0.1),
-                                      child: Container(
-                                        width: 80,
-                                        height: 80,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.2),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.camera_alt,
-                                          color: Colors.white,
-                                          size: 40,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Fotografar Geladeira',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Deixe a IA identificar seus ingredientes',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontSize: 14,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ).animate().scale(delay: 400.ms).shimmer(delay: 1000.ms, duration: 2000.ms),
+                    // // Botão da Câmera - Feature principal (comentado para futuro)
+                    // Container(
+                    //   width: double.infinity,
+                    //   height: 220,
+                    //   decoration: BoxDecoration(
+                    //     gradient: LinearGradient(
+                    //       begin: Alignment.topLeft,
+                    //       end: Alignment.bottomRight,
+                    //       colors: [
+                    //         Theme.of(context).colorScheme.primary,
+                    //         Theme.of(context).colorScheme.tertiary,
+                    //       ],
+                    //     ),
+                    //     borderRadius: BorderRadius.circular(24),
+                    //     boxShadow: [
+                    //       BoxShadow(
+                    //         color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                    //         blurRadius: 20,
+                    //         offset: const Offset(0, 10),
+                    //       ),
+                    //     ],
+                    //   ),
+                    //   child: Material(
+                    //     color: Colors.transparent,
+                    //     child: InkWell(
+                    //       borderRadius: BorderRadius.circular(24),
+                    //       onTap: () => context.goToCamera(),
+                    //       child: Padding(
+                    //         padding: const EdgeInsets.all(20),
+                    //         child: Column(
+                    //           mainAxisAlignment: MainAxisAlignment.center,
+                    //           children: [
+                    //             AnimatedBuilder(
+                    //               animation: _animationController,
+                    //               builder: (context, child) {
+                    //                 return Transform.scale(
+                    //                   scale: 1.0 + (_animationController.value * 0.1),
+                    //                   child: Container(
+                    //                     width: 70,
+                    //                     height: 70,
+                    //                     decoration: BoxDecoration(
+                    //                       color: Colors.white.withOpacity(0.2),
+                    //                       shape: BoxShape.circle,
+                    //                     ),
+                    //                     child: const Icon(
+                    //                       Icons.camera_alt,
+                    //                       color: Colors.white,
+                    //                       size: 35,
+                    //                     ),
+                    //                   ),
+                    //                 );
+                    //               },
+                    //             ),
+                    //             const SizedBox(height: 12),
+                    //             const Text(
+                    //               'Fotografar Geladeira',
+                    //               style: TextStyle(
+                    //                 color: Colors.white,
+                    //                 fontSize: 18,
+                    //                 fontWeight: FontWeight.bold,
+                    //               ),
+                    //             ),
+                    //             const SizedBox(height: 6),
+                    //             Text(
+                    //               'Deixe a IA identificar seus ingredientes',
+                    //               style: TextStyle(
+                    //                 color: Colors.white.withOpacity(0.9),
+                    //                 fontSize: 13,
+                    //               ),
+                    //               textAlign: TextAlign.center,
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ).animate().scale(delay: 400.ms).shimmer(delay: 1000.ms, duration: 2000.ms),
 
-                    const SizedBox(height: 32),
+                    // const SizedBox(height: 32),
 
                     // Ou separador
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'ou digite manualmente',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey.shade600,
-                                ),
-                          ),
-                        ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ).animate().fadeIn(delay: 600.ms),
+                    // Row(
+                    //   children: [
+                    //     const Expanded(child: Divider()),
+                    //     Padding(
+                    //       padding: const EdgeInsets.symmetric(horizontal: 16),
+                    //       child: Text(
+                    //         'Digite seus ingredientes',
+                    //         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    //               color: Colors.grey.shade600,
+                    //             ),
+                    //       ),
+                    //     ),
+                    //     const Expanded(child: Divider()),
+                    //   ],
+                    // ).animate().fadeIn(delay: 600.ms),
 
-                    const SizedBox(height: 24),
+                    // const SizedBox(height: 15),
 
                     // Input de ingredientes
                     const IngredientInput()
@@ -275,7 +287,7 @@ class _HomePageState extends ConsumerState<HomePage>
                             )
                             .toList(),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 15),
                     ],
 
                     // Receitas geradas
@@ -296,14 +308,12 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
                       ...generatedRecipes.asMap().entries.map(
                         (entry) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: _buildGeneratedRecipeCard(entry.value, entry.key),
                         ).animate(delay: (entry.key * 100).ms).slideY(begin: 0.2).fadeIn(),
                       ),
-                      const SizedBox(height: 32),
                     ],
                   ],
                 ),
@@ -326,32 +336,11 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
                 child: SafeArea(
                   top: false,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: isGenerating ? null : _generateRecipes,
-                      icon: isGenerating
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            )
-                          : const Icon(Icons.auto_fix_high),
-                      label: Text(
-                        isGenerating ? 'Gerando receitas...' : 'Gerar Receitas com IA',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
+                  child: PrimaryButton(
+                    label: isGenerating ? 'Gerando receitas...' : 'Gerar Receitas com IA',
+                    onPressed: _generateRecipes,
+                    isLoading: isGenerating,
+                    icon: Icons.auto_fix_high,
                   ),
                 ),
               )
@@ -453,21 +442,16 @@ class _HomePageState extends ConsumerState<HomePage>
   /// Constrói card para receita gerada
   Widget _buildGeneratedRecipeCard(Recipe recipe, int index) {
     return Card(
-      elevation: 2,
+      elevation: 4,
+      shadowColor: Colors.black.withOpacity(0.08),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => context.goToRecipeDetail(
-          recipe.id,
-          recipe: recipe.toJson(),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               Row(
                 children: [
                   Expanded(
@@ -546,16 +530,60 @@ class _HomePageState extends ConsumerState<HomePage>
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    onPressed: () {
-                      // TODO: Implementar salvar nos favoritos
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${recipe.nome} salva nos favoritos!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
+                    onPressed: () async {
+                      final user = ref.read(currentUserProvider);
+                      if (user == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Faça login para salvar favoritos'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                        return;
+                      }
+
+                      try {
+                        final favoritesNotifier =
+                            ref.read(favoritesProvider.notifier);
+                        
+                        final isFavorite = favoritesNotifier.isFavorite(recipe.id);
+                        
+                        if (isFavorite) {
+                          await favoritesNotifier.removeFromFavorites(recipe.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content:
+                                  Text('${recipe.nome} removida dos favoritos'),
+                              backgroundColor: Colors.orange,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        } else {
+                          // Adicionar aos favoritos
+                          await favoritesNotifier.addToFavorites(recipe);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${recipe.nome} salva nos favoritos! ❤️'),
+                              backgroundColor: Colors.green,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Erro ao salvar favorito: ${e.toString()}',
+                            ),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
                     },
-                    icon: const Icon(Icons.favorite_border),
+                    icon: ref.watch(favoritedRecipesProvider)[recipe.id] == true
+                        ? const Icon(Icons.favorite, color: Colors.red)
+                        : const Icon(Icons.favorite_border),
                     tooltip: 'Salvar nos favoritos',
                   ),
                 ],
@@ -563,7 +591,6 @@ class _HomePageState extends ConsumerState<HomePage>
             ],
           ),
         ),
-      ),
     );
   }
 

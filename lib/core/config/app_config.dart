@@ -37,7 +37,7 @@ class AppConfig {
   /// Exemplo: flutter build appbundle --dart-define=SUPABASE_ANON_KEY=sua-chave-aqui
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'PEGUE_NO_SUPABASE_ANON_KEY',
+    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhtc2x5bWtudnljcGF6anVwdGhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2ODAxNzUsImV4cCI6MjA3NzI1NjE3NX0.7qyCrboETED-vp-XIlrZ2hCbeY-ofuftHw0k412WRoM',
   );
 
   // Debug
@@ -48,7 +48,7 @@ class AppConfig {
   
   // Timeouts
   static const Duration apiTimeout = Duration(seconds: 30);
-  static const Duration cameraTimeout = Duration(seconds: 10);
+  // static const Duration cameraTimeout = Duration(seconds: 10);
   
   // Limits
   static const int maxIngredientsCount = 20;
