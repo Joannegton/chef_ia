@@ -101,6 +101,19 @@ final favoritesProvider =
   return FavoritesNotifier(favoritesService);
 });
 
+/// Provider para carregamento assíncrono (com loading state)
+final favoritesAsyncProvider = FutureProvider<List<Recipe>>((ref) async {
+  final favoritesService = ref.watch(favoritesServiceProvider);
+  try {
+    final favoritesData = await favoritesService.getFavorites();
+    return favoritesData
+        .map((item) => Recipe.fromJson(item['recipe_data'] ?? item))
+        .toList();
+  } catch (e) {
+    throw Exception('Erro ao carregar favoritos: $e');
+  }
+});
+
 /// Provider para verificar e gerenciar estado de favorito individual
 class FavoritedRecipe {
   final String recipeId;

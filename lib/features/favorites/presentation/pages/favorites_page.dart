@@ -31,9 +31,85 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final favorites = ref.watch(favoritesProvider);
-    final filteredRecipes = _getFilteredRecipes(favorites);
+    final favoritesAsync = ref.watch(favoritesAsyncProvider);
+    
+    return favoritesAsync.when(
+      loading: () => _buildLoadingState(),
+      error: (error, stackTrace) => _buildErrorState(error),
+      data: (favorites) {
+        final filteredRecipes = _getFilteredRecipes(favorites);
+        return _buildContent(filteredRecipes);
+      },
+    );
+  }
 
+  Widget _buildLoadingState() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Minhas Receitas'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Carregando suas receitas...',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Minhas Receitas'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red.shade400,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Erro ao carregar receitas',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.red.shade600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error.toString(),
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              PrimaryButton(
+                label: 'Tentar Novamente',
+                onPressed: () {
+                  ref.invalidate(favoritesAsyncProvider);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(List<Recipe> filteredRecipes) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Minhas Receitas'),

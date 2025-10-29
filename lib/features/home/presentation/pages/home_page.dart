@@ -2,6 +2,7 @@ import 'package:chef_ia/models/recipe_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:ui';
 
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/router/app_router.dart';
@@ -37,7 +38,6 @@ class _HomePageState extends ConsumerState<HomePage>
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final ingredients = ref.watch(ingredientsProvider);
-    final isGenerating = ref.watch(isGeneratingRecipesProvider);
     final generatedRecipes = ref.watch(generatedRecipesProvider);
 
     return Scaffold(
@@ -337,9 +337,8 @@ class _HomePageState extends ConsumerState<HomePage>
                 child: SafeArea(
                   top: false,
                   child: PrimaryButton(
-                    label: isGenerating ? 'Gerando receitas...' : 'Gerar Receitas com IA',
+                    label: 'Gerar Receitas com IA',
                     onPressed: _generateRecipes,
-                    isLoading: isGenerating,
                     icon: Icons.auto_fix_high,
                   ),
                 ),
@@ -362,6 +361,16 @@ class _HomePageState extends ConsumerState<HomePage>
     ref.read(isGeneratingRecipesProvider.notifier).state = true;
 
     try {
+      // Mostra o modal de carregamento criativo
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          barrierColor: Colors.transparent,
+          builder: (context) => _buildChefCookingDialog(),
+        );
+      }
+
       // Chama a API e obtém as receitas
       final recipes = await ref.read(ingredientsProvider.notifier).generateRecipes(ref);
       
@@ -369,6 +378,8 @@ class _HomePageState extends ConsumerState<HomePage>
       ref.read(generatedRecipesProvider.notifier).setRecipes(recipes);
       
       if (mounted) {
+        Navigator.pop(context); // Fecha o modal de carregamento
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${recipes.length} receitas geradas com sucesso! 🍽️'),
@@ -380,6 +391,8 @@ class _HomePageState extends ConsumerState<HomePage>
     } catch (e) {
       debugPrint('Erro ao gerar receitas: $e');
       if (mounted) {
+        Navigator.pop(context); // Fecha o modal de carregamento
+        
         // Extrair mensagem mais amigável do erro
         String errorMessage = _getErrorMessage(e.toString());
         
@@ -400,6 +413,156 @@ class _HomePageState extends ConsumerState<HomePage>
       // Remove estado de carregamento
       ref.read(isGeneratingRecipesProvider.notifier).state = false;
     }
+  }
+
+  Widget _buildChefCookingDialog() {
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+      child: Scaffold(
+        backgroundColor: Colors.black.withOpacity(0.5),
+        body: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Chef animado com fade in
+                Text(
+                  '👨‍🍳',
+                  style: const TextStyle(fontSize: 100),
+                )
+                    .animate()
+                    .fadeIn(duration: 400.ms)
+                    .scale(duration: 600.ms, curve: Curves.elasticOut),
+                const SizedBox(height: 32),
+                
+                // Utensílios girando com fade in cascata
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('🔪', style: const TextStyle(fontSize: 48))
+                        .animate()
+                        .fadeIn(duration: 500.ms, delay: 200.ms)
+                        .then()
+                        .animate(onPlay: (controller) => controller.repeat())
+                        .rotate(duration: 1500.ms)
+                        .then()
+                        .rotate(duration: 1500.ms),
+                    const SizedBox(width: 24),
+                    Text('🍳', style: const TextStyle(fontSize: 48))
+                        .animate()
+                        .fadeIn(duration: 500.ms, delay: 250.ms)
+                        .then()
+                        .animate(onPlay: (controller) => controller.repeat())
+                        .scale(duration: 1000.ms, curve: Curves.easeInOut),
+                    const SizedBox(width: 24),
+                    Text('🥄', style: const TextStyle(fontSize: 48))
+                        .animate()
+                        .fadeIn(duration: 500.ms, delay: 300.ms)
+                        .then()
+                        .animate(onPlay: (controller) => controller.repeat())
+                        .rotate(duration: 1500.ms)
+                        .then()
+                        .rotate(duration: 1500.ms),
+                  ],
+                ),
+                const SizedBox(height: 48),
+                
+                // Texto principal com sombra para melhor contraste
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Criando receitas deliciosas...',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+                    .animate()
+                    .fadeIn(duration: 500.ms, delay: 400.ms)
+                    .slideY(begin: 0.2, duration: 500.ms, delay: 400.ms),
+                const SizedBox(height: 16),
+                
+                // Mensagem secundária com animação de pontos
+                _buildAnimatedLoadingText()
+                    .animate()
+                    .fadeIn(duration: 500.ms, delay: 500.ms)
+                    .slideY(begin: 0.2, duration: 500.ms, delay: 500.ms),
+                const SizedBox(height: 32),
+                
+                // Mensagem de paciência
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '⏱️ Isso pode demorar um pouco...',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.white,
+                        height: 1.6,
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(0, 1),
+                            blurRadius: 3,
+                            color: Colors.black.withOpacity(0.4),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+                    .animate()
+                    .fadeIn(duration: 500.ms, delay: 600.ms)
+                    .slideY(begin: 0.3, duration: 500.ms, delay: 600.ms),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedLoadingText() {
+    return DefaultTextStyle(
+      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+        color: Colors.white,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        shadows: [
+          Shadow(
+            offset: const Offset(0, 1),
+            blurRadius: 3,
+            color: Colors.black.withOpacity(0.4),
+          ),
+        ],
+      ),
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          int dots = (_animationController.value * 3).floor() % 4;
+          return Text(
+            'Mexendo a panela${'.' * dots}',
+          );
+        },
+      ),
+    );
   }
 
   /// Converte mensagens de erro técnicas em mensagens amigáveis
