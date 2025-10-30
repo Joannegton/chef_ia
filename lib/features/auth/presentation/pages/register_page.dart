@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/router/app_router.dart';
@@ -438,7 +439,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
       }
     } catch (e) {
       if (mounted) {
-        _showErrorSnackbar('Erro ao criar conta. Tente novamente.');
+        String errorMessage = 'Erro ao criar conta. Tente novamente.';
+        if (e is AuthException) {
+          if (e.message.contains('already registered') || e.message.contains('User already registered')) {
+            errorMessage = 'Este email já está cadastrado. Tente fazer login.';
+          } else if (e.message.contains('Password should be at least')) {
+            errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+          } else if (e.message.contains('Invalid email')) {
+            errorMessage = 'Digite um email válido.';
+          } else {
+            errorMessage = e.message;
+          }
+        }
+        _showErrorSnackbar(errorMessage);
       }
     } finally {
       if (mounted) {

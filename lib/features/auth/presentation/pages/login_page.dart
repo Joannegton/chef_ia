@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/router/app_router.dart';
@@ -388,7 +389,17 @@ class _LoginPageState extends ConsumerState<LoginPage>
       debugPrint('🔍 Stack trace: ${StackTrace.current}');
       
       if (mounted) {
-        _showErrorSnackbar('Erro ao fazer login. Verifique suas credenciais.');
+        String errorMessage = 'Erro ao fazer login. Verifique suas credenciais.';
+        if (e is AuthException) {
+          if (e.message.contains('Invalid login credentials') || e.message.contains('Email not confirmed')) {
+            errorMessage = 'Email ou senha incorretos.';
+          } else if (e.message.contains('Too many requests')) {
+            errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
+          } else {
+            errorMessage = e.message;
+          }
+        }
+        _showErrorSnackbar(errorMessage);
       }
     } finally {
       if (mounted) {

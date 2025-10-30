@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import '../config/app_config.dart';
 
 /// Provider para a instância do Supabase
 final supabaseProvider = Provider<SupabaseClient>((ref) {
@@ -91,6 +95,37 @@ class AuthService {
   /// Reset de senha
   Future<void> resetPassword(String email) async {
     await _supabase.auth.resetPasswordForEmail(email);
+  }
+  
+  /// Excluir conta do usuário
+  Future<void> deleteAccount() async {
+    final session = _supabase.auth.currentSession;
+    if (session == null) {
+      throw Exception('Usuário não autenticado');
+    }
+
+    final token = session.accessToken;
+    
+    final response = await http.delete(
+      Uri.parse('${AppConfig.baseUrl}/recipes/user/account'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    ).timeout(AppConfig.apiTimeout);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['success'] == true) {
+        // Após excluir conta no backend, fazer logout local
+        await signOut();
+        return;
+      } else {
+        throw Exception(data['message'] ?? 'Erro ao excluir conta');
+      }
+    } else {
+      throw Exception('Erro na API: ${response.statusCode} - ${response.body}');
+    }
   }
   
   /// Usuário atual

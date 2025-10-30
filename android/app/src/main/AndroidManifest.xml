@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Internet permission for API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Permission for AdMob -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
     
     <!-- Permissions for camera and image picking -->
     <uses-permission android:name="android.permission.CAMERA" />

@@ -88,6 +88,7 @@ class _IngredientInputState extends ConsumerState<IngredientInput> {
     if (text.isNotEmpty) {
       ref.read(ingredientsProvider.notifier).addIngredient(text);
       _controller.clear();
+      _focusNode.unfocus();
     }
   }
 

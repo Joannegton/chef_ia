@@ -96,7 +96,11 @@ class _HomePageState extends ConsumerState<HomePage>
               //   value: 'settings',
               //   child: Text('Configurações'),
               // ),
-              // const PopupMenuDivider(),
+              const PopupMenuItem<String>(
+                value: 'delete-account',
+                child: Text('Excluir Conta'),
+              ),
+              const PopupMenuDivider(),
               const PopupMenuItem<String>(
                 value: 'logout',
                 child: Text('Sair'),
@@ -110,6 +114,9 @@ class _HomePageState extends ConsumerState<HomePage>
                 // case 'settings':
                 //   // TODO: Implementar configurações
                 //   break;
+                case 'delete-account':
+                  _showDeleteAccountDialog();
+                  break;
                 case 'logout':
                   // Limpar estado antes de fazer logout
                   ref.read(ingredientsProvider.notifier).clear();
@@ -717,6 +724,7 @@ class _HomePageState extends ConsumerState<HomePage>
                         
                         if (isFavorite) {
                           await favoritesNotifier.removeFromFavorites(recipe.id);
+                          ref.read(favoritedRecipesProvider.notifier).setFavorited(recipe.id, false);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content:
@@ -728,6 +736,7 @@ class _HomePageState extends ConsumerState<HomePage>
                         } else {
                           // Adicionar aos favoritos
                           await favoritesNotifier.addToFavorites(recipe);
+                          ref.read(favoritedRecipesProvider.notifier).setFavorited(recipe.id, true);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('${recipe.nome} salva nos favoritos! ❤️'),
@@ -759,6 +768,60 @@ class _HomePageState extends ConsumerState<HomePage>
           ),
         ),
     );
+  }
+
+  /// Mostra dialog de confirmação para excluir conta
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir Conta'),
+        content: const Text(
+          'Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita e todos os seus dados serão perdidos permanentemente.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Fechar dialog
+              await _deleteAccount();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Exclui a conta do usuário
+  Future<void> _deleteAccount() async {
+    try {
+      await ref.read(authServiceProvider).deleteAccount();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Conta excluída com sucesso'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao excluir conta: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override

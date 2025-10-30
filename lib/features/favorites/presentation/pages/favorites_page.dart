@@ -198,13 +198,18 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
           Expanded(
             child: filteredRecipes.isEmpty
                 ? _buildEmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredRecipes.length,
-                    itemBuilder: (context, index) {
-                      final recipe = filteredRecipes[index];
-                      return _buildRecipeCard(recipe, index);
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(favoritesAsyncProvider);
                     },
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredRecipes.length,
+                      itemBuilder: (context, index) {
+                        final recipe = filteredRecipes[index];
+                        return _buildRecipeCard(recipe, index);
+                      },
+                    ),
                   ),
           ),
         ],
