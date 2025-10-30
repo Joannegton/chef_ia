@@ -11,6 +11,12 @@
         android:label="chef_ia"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+        
+        <!-- AdMob App ID - Seu ID real do AdMob -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7575556543606646~7751212134"/>
+            
         <activity
             android:name=".MainActivity"
             android:exported="true"

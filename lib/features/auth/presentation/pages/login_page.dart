@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/ad_service.dart';
 import '../../../../core/widgets/custom_button.dart';
 
 /// Página de login
@@ -373,6 +374,11 @@ class _LoginPageState extends ConsumerState<LoginPage>
       
       debugPrint('✅ Login realizado com sucesso!');
       
+      // Mostrar anúncio após login bem-sucedido
+      if (mounted) {
+        await AdService().showInterstitialAd();
+      }
+      
       if (mounted) {
         debugPrint('🏠 Navegando para a página inicial...');
         context.goToHome();
@@ -410,6 +416,11 @@ class _LoginPageState extends ConsumerState<LoginPage>
       
       if (success) {
         debugPrint('✅ Login com Google realizado com sucesso!');
+        
+        // Mostrar anúncio após login bem-sucedido
+        if (mounted) {
+          await AdService().showInterstitialAd();
+        }
         
         if (mounted) {
           debugPrint('🏠 Navegando para a página inicial...');

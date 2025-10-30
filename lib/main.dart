@@ -1,6 +1,8 @@
 import 'package:chef_ia/core/config/app_config.dart';
 import 'package:chef_ia/core/router/app_router.dart';
+import 'package:chef_ia/core/services/ad_service.dart';
 import 'package:chef_ia/core/theme/app_theme.dart';
+import 'package:chef_ia/core/widgets/app_startup_ad.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,6 +16,9 @@ void main() async {
       anonKey: AppConfig.supabaseAnonKey,
       debug: AppConfig.isDebug,
     );
+
+    // Inicializar anúncios
+    await AdService().initialize();
     
     runApp(
       const ProviderScope(
@@ -43,11 +48,13 @@ class ChefIAApp extends ConsumerWidget {
       
       // Configurações globais
       builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.noScaling, // Previne mudanças de escala
+        return AppStartupAd(
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.noScaling, // Previne mudanças de escala
+            ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );

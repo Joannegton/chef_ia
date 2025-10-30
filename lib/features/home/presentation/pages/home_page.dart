@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/ad_service.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../favorites/providers/favorites_provider.dart';
 import '../widgets/ingredient_chip.dart';
@@ -379,6 +380,9 @@ class _HomePageState extends ConsumerState<HomePage>
       
       if (mounted) {
         Navigator.pop(context); // Fecha o modal de carregamento
+        
+        // Mostrar anúncio após gerar receitas
+        await AdService().showInterstitialAd();
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

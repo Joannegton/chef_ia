@@ -28,7 +28,6 @@ class AppConfig {
     }
   }
   
-  /// Exemplo: flutter build appbundle --dart-define=SUPABASE_URL=https://seu-projeto.supabase.co
   static const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
     defaultValue: 'https://xmslymknvycpazjupthf.supabase.co',
